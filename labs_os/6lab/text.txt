@@ -1,0 +1,15 @@
+28 variant 
+
+3 - 1 - 4
+
+binary tree where key is users id
+
+key is int32
+
+every user has 2 bills Debet and Kredit 
+when debet is zero
+user can get modey from credit
+untill some value
+
+user can popolnit` sredstva
+and tratit` s oboih bills

@@ -1,0 +1,14 @@
+4lab.cpp
+a.out
+record
+wow.txt
+w.txt
+total 48
+drwxrwxr-x 2 denis denis  4096 ноя 19 14:56 .
+drwxrwxr-x 5 denis denis  4096 ноя 18 21:14 ..
+-rw-rw-r-- 1 denis denis  4926 ноя 19 14:56 4lab.cpp
+-rwxrwxr-x 1 denis denis 17456 ноя 19 14:56 a.out
+-rw-rw-r-- 1 denis denis  2048 ноя 19 15:07 record
+-rw------- 1 denis denis   536 окт 22 15:45 wow.txt
+-rw------- 1 denis denis   542 ноя 19 15:07 w.txt
+Linux denis-Extensa-2510G 4.15.0-39-generic #42~16.04.1-Ubuntu SMP Wed Oct 24 17:09:54 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
