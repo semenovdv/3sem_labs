@@ -1,13 +1,6 @@
-parrot parrot
+parrot 
 
-
-
-
-
-PARROT      
-
-PARROT parrOT
-
-
+PARROT
+parrot parroT
 
 parrot

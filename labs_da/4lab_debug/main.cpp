@@ -243,7 +243,7 @@ int main() {
 					lines_count++;
 					word_counter = 1;
 				}
-				if ((text[i+move] == ' ' || text[i+move] == '\n')  && (har_before != '\n' && char_before != ' ')) { // TODO ??
+				if ((text[i+move] == ' ' || text[i+move] == '\n')  && (has_before != '\n' && char_before != ' ')) { // TODO ??
 					word_counter++;
 				}
 				char_before = text[i+move];
