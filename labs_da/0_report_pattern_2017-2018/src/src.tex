@@ -1,0 +1,138 @@
+\section{Описание}
+Требуется разработать программу, осуществляющую ввод пар «ключ-значение», их упорядочивание по возрастанию ключа алгоритмом Карманной сортировки (Bucket Sort) за линейное время и вывод отсортированной последовательности. 
+
+Как сказано в \cite{Kormen}: \enquote{В случае Карманной Сортировки (bucket sort) предполагется, что входные данные подчиняются равномерному закону распределения. Время работы в среднем случае при этом оказывается равном О(n).  При карманной сортировке предполагается, что входные числа генерируются случайным процессом и равномерно распределены в интервале $[0,1)$.
+
+Карманная сортировка разбивает интервал $[0,1)$ на $n$ одинаковых интервалов, или карманов (buckets), а затем распределяет $n$ входных чисел. Поскольку последние равномерно распределены в интервале $[0,1)$, мы предполагем, что в каждой из карманов попадает не очень много элементов. Чтобы получить выходную последовательность, нужно просто выполнить сортировку чисел в каждом кармане, а затем последовательно перечислить элементы каждого кармана. 
+
+При составлении кода карманной сортировки предполагается, что на вход подается массив $А$, состоящий из $n$ элементов, и что величина каждого принадлежащего массиву элемента $А[i]$ удовлетворяет неравенству $0 =< A[i] < 1$. Для работы нам понадобится вспомогательный массив связанных списков (карманов) $B[0..n-1]$}.
+
+\pagebreak
+
+\section{Исходный код}
+Основные этапы написания кода:
+\begin{enumerate}
+\item Считывание исходных данных
+\item Разделение по карманам
+\item Сортировка каждого отдельного кармана
+\item Вывод результата
+\end{enumerate}
+
+Мы храним ключ и значение в структуре KeyValue, реализованной в "KeyValue.h".
+
+Во время считывание вызываем конструктор KeyValue() и кладем получившийся объект в вектор.
+
+Для распределения всех чисел в полуинтервале $[0;1)$, мы делим ключи на максимально возможное значения ключа + 10, чтобы не получить значение $1$
+
+
+\begin{lstlisting}[language=C]
+#include "vector.cpp"
+#include "KeyValue.h"
+#include <cmath>
+#include <limits.h>
+#include <iostream>      
+
+int main(){
+    std::cout.precision(20); 
+    long double key;
+    std::string value;
+    NVector::TVector<KeyValue> input;
+	
+	//reading structure
+    while(std::cin >> key >> value){
+        if(input.Push_back(KeyValue(key, value)) == false){
+            std::cout << "ERROR push_back" << std::endl;
+            return 0;
+        }
+    }
+
+    const long double  num_of_el = input.Size();
+
+    NVector::TVector<NVector::TVector<KeyValue>> matrix;
+    matrix.Resize(num_of_el);
+
+    // making counting - filling matrix B
+    for(long long  i = 0; i < num_of_el; ++i){
+        long double tmp = (long double)input[i].m_key / ((long double)ULLONG_MAX + 10);
+        if(matrix[(long long)(( num_of_el * tmp ))].Push_back(input[i]) == false){
+            std::cout << "ERROR push_back" << std::endl;
+            return 0;
+        }
+    }   
+    
+	//sorting every vector in matrix 
+
+    for(long long i = 0; i < matrix.Size(); i++){
+        if(matrix[i].Size() != 0) {
+            for(long long k = 1; k  < matrix[i].Size(); k++){
+            KeyValue tmp;
+            tmp.m_key = matrix[i][k].m_key;
+            tmp.m_value = matrix[i][k].m_value;
+            long long j = k-1;
+                while(j >= 0 && matrix[i][j].m_key > tmp.m_key){
+                    matrix[i][j+1].m_key = matrix[i][j].m_key;
+                    matrix[i][j+1].m_value = matrix[i][j].m_value;
+                    matrix[i][j].m_key = tmp.m_key;
+                    matrix[i][j].m_value = tmp.m_value;
+                    j--;
+                }
+            }
+        }
+    }
+    
+	//printing result 
+    for(unsigned long long i = 0; i < num_of_el; i++){
+        if(matrix[i].Size() != 0){
+            for(unsigned long long j = 0; j < matrix[i].Size(); j++){
+                std::cout << matrix[i][j].m_key << "\t" << matrix[i][j].m_value << std::endl;
+            }
+        }
+    }
+    
+}
+\end{lstlisting}
+
+
+\pagebreak
+
+\section{Консоль}
+\begin{alltt}
+
+denis@denis-Extensa-2510G:~/labs_3sem/labs_da/1lab_debug/testing\$ sudo ./wrapper.sh 
+Execute tests/01.t
+OK
+Execute tests/02.t
+OK
+Execute tests/03.t
+OK
+\end{alltt}
+
+\textbf{Пример теста 01.t:}
+
+3689348814741910528	vKLwRKbNx
+
+14757395258967642112	eaTYYzeyW
+
+11068046444225732608	oXVGXjwKN
+
+0	aBlXfuZsC
+
+7378697629483821056	XFgYykwmA
+
+
+
+
+\textbf{Полученный ответ 01.a:}
+
+0	aBlXfuZsC
+
+3689348814741910528	vKLwRKbNx
+
+7378697629483821056	XFgYykwmA
+
+11068046444225732608	oXVGXjwKN
+
+14757395258967642112	eaTYYzeyW
+
+\pagebreak
+

@@ -1,0 +1,58 @@
+\section{Тест производительности}
+\begin{lstlisting}[language=Python]
+import random
+import string
+from decimal import Decimal
+
+MAX_KEY_VAL = 18446744073709551615
+MAX_VAL_LEN = 10
+
+def generate_random_value():
+    return "".join([random.choice(string.ascii_letters) for _ in range(1, MAX_VAL_LEN)])
+
+if __name__ == "__main__":
+    for num in range(1, 2):
+        values = list()
+        output_filename = "tests/{:02d}.t".format(num)
+        N = random.randint(5, 6)
+        keyadd = MAX_KEY_VAL/N
+        key = 0
+        for _ in range( N ):
+            value = generate_random_value()
+            values.append( (key, value) )
+            key = key + keyadd
+	
+        random.shuffle(values)
+
+        with open( output_filename, 'w') as output:
+            for item in values:
+                output.write( "{0:.0f}\t{1:}\n".format( item[0], item[1] ) )
+        
+        output_filename = "tests/{:02d}.a".format( num )
+        with open( output_filename, 'w') as output:
+            values = sorted( values, key=lambda x: x[0] )
+            for value in values:
+                output.write( "{0:.0f}\t{1:}\n".format(value[0], value[1]) )   
+\end{lstlisting}
+Первый результат - результат карманной сортировки. Второй - сортировки вставкой.
+
+\begin{center}
+\begin{table}[h]
+
+\label{tabular:timesandtenses}
+
+\begin{tabular}{c|c|c}
+Кол-во тестов & Bucket Sort (s) & Insert Sort (s)\\
+
+100 & 6.999999999999999895e-06
+ & 0.00023399999999999999576\\
+10000 & 0.0004550000000000000008 & 2.1180940000000001433\\
+40000 & 0.0017530000000000000009 & 33.79475999999999658\\
+\end{tabular}
+\end{table}
+\end{center}
+Как мы видим, на равномерно распределенных последовательностях наша сортировка работает гораздо быстрее.
+
+
+ 
+\pagebreak

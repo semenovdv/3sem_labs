@@ -1,0 +1,27 @@
+\section{Тест производительности}
+\begin{lstlisting}[language=C]
+clock_t beg = clock();
+ /* some work */
+clock_t end = clock();
+std::cout << "time is " << end - beg << endl;
+\end{lstlisting}
+
+\begin{center}
+\begin{table}[h]
+
+\label{tabular:timesandtenses}
+
+\begin{tabular}{c|c|c|c}
+Размер текста & Размер шаблона & нативный & BM\\
+
+796 & 4 & 451 & 1194\\
+12225 & 18 & 8760 & 3894\\
+38805 & 101 & 62989 & 10548\\
+\end{tabular}
+\end{table}
+\end{center}
+Как мы видим, на больших объемах текста и больших шаблонах наш алоритм работает в разы быстрее.
+
+
+ 
+\pagebreak

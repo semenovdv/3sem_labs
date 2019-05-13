@@ -1,0 +1,175 @@
+\section{Описание}
+Программа должна обрабатывать две строки входного файла, строить по ним обобщенное суффиксное дерево и находить в нем наибольшую общую подстроку двух строк.
+
+{\bfseries Входные данные:} две строки.
+
+{\bfseries Выходные данные:} на первой строке нужно распечатать длину максимальной общей подстроки, затем перечислить все возможные варианты общих подстрок этой длины в порядке лексикографического возрастания без повторов.
+
+\pagebreak
+
+\section{Исходный код}
+Основные этапы написания кода:
+\begin{enumerate}
+\item Анализ поставленной задачи
+\item Сбор необходимой информации для реализации
+\item Написание кода:
+\begin{enumerate}
+\item Определение классов и функций
+\item Написание конструкторов
+\item Написание процедур добавления суффикса в дерево
+\item Реализация обхода дерева в глубину
+\end{enumerate}
+\item Тестирование кода, отладка
+\item Составление отчета
+\end{enumerate}
+
+
+Для хранения подстрок мы создадим класс TSTNode, каждый элемент которого будет содержать $map<char, TSTNode*>$ содержащий следующие переходы и два числа: $begin$ и $end$  для экономии места. 
+
+Основная процедура построения - это PushBack.
+Я использовал алгоритм Укконена. Чтобы построить дерево мы должны поочередно вызвать процедуру, передавая ей число от $0$ до кол-ва литер $- 1$. Процедура сама найдет нужные строки в веденном тексте.
+
+Вторая важная функция - это поиск наибольшей общей строки в дереве. По мере своего продвижения она помещает пройденные ноды в deque, чтобы затем можно было легко восстановить строки, скрытые за абстракцией дерева.
+
+
+\begin{lstlisting}[language=C]
+
+void TSTree::PushBack1(int pos_ch) {
+    how_much_left++;
+    char new_ch = text1[pos_ch]; // char to be pushed
+       suffix_link_change = root; 
+
+    while(how_much_left) {
+        if (active_length == 0) {
+            active_char_pos = pos_ch;
+        }
+        std::map<char, TSTNode* >::iterator pos = active_node->next_nodes.find(text1[active_char_pos]);
+         
+        TSTNode *next = nullptr;
+        if (pos == active_node->next_nodes.end()) {
+            TSTNode *leaf = new TSTNode(pos_ch, textsize1 - pos_ch, true,false); 
+            active_node->next_nodes[text1[active_char_pos]] = leaf;
+            add_link(active_node);
+        // we found link, 2 ways    
+        } else {
+            next = pos->second;
+            // if we can go dipper 
+            if (active_length >= next->length) {
+                active_char_pos += next->length;
+                active_length -= next->length;
+                active_node = next;
+                continue;
+            }
+            // 3 rule, char (prolonged) nalready in node, have to know nex, false, truet
+            
+            if( text1[next->begin + active_length] == new_ch) { 
+                ++active_length;
+                add_link(active_node);
+                break;
+            }
+            
+            TSTNode *split = new TSTNode(next->begin, active_length, true, false);
+            TSTNode *leaf = new TSTNode(pos_ch, textsize1-pos_ch, true, false);
+            
+            active_node->next_nodes[text1[active_char_pos]] = split;
+            
+            split->next_nodes[new_ch] = leaf;
+            next->begin += active_length;
+            next->length -= active_length;
+
+            split->next_nodes[text1[next->begin]] = next;
+           
+
+            add_link(split);
+        }
+
+        how_much_left--;
+        if(active_node == root && active_length != 0) {
+            // going to previous suffix
+            active_length--;
+            active_char_pos = pos_ch - how_much_left + 1;            
+        } else {
+            active_node = (active_node->slink) ? active_node->slink : root;
+        }
+    }
+}
+
+int TSTree::FindLCS_Node(TSTNode *node, size_t depth) { // ??? &str
+
+    deq.push_back(node);
+    
+    int got = 5;
+    int to_ret = 5;
+    depth = depth + node->length;
+
+    for (std::map<char, TSTNode *>::iterator it = node->next_nodes.begin(); it != node->next_nodes.end(); ++it) {
+        got = FindLCS_Node(it->second, depth); // never got 5
+
+        if (got == 0) to_ret = 0;
+        if (got == 1) {
+            if (to_ret == 5) to_ret = 1;
+            if (to_ret == 2) to_ret = 0;
+        } 
+        if (got == 2){
+            if (to_ret == 1) to_ret = 0;
+            if (to_ret == 5) to_ret = 2;
+        }
+    }
+
+    if (to_ret == 5){
+        if (node->is_s1) to_ret = 1;
+        if (node->is_s2) to_ret = 2;
+    }
+
+    if (to_ret == 0) {  
+        if (depth > out.first) {
+            out.first = depth;
+            out.second.clear();
+            out.second.insert(GetStr());
+        } 
+        if (depth == out.first) {
+            out.second.insert(GetStr());
+        }
+    } 
+    
+    deq.pop_back();
+
+    return to_ret;
+    
+}
+
+\end{lstlisting}
+
+
+\pagebreak
+
+\section{Консоль}
+\begin{alltt}
+denis@denis-Extensa-2510G:~/labs_3sem/labs_da/5lab_release/5lab\$ ./5lab 
+hellohohlandi
+hohhel
+3
+hel
+hoh
+
+denis@denis-Extensa-2510G:~/labs_3sem/labs_da/5lab_release/5lab\$ ./5lab < text1.txt 
+998
+thtprytrtvuttqtrvtquthtpvtturtuhtrrhtqyxrprthurrpytxurtrxtqyxrprthurrpytrpyrxvhtpw
+prtrhpvxvpvtrthtwrqturttrhtrthtrpyrxvhtpwuryurrutryqturtwpxvrrtxtrxqutxvthxrpythtr
+prytrtvuttqtrvtqthxhtptrhuqtthtuxrtthxvttwhtvxtwxvthxprytrtvuttqtrvuxtptpttrtvtxtt
+rhpvtrtxtththtptrwxthutwrxtttptrxxptptrtpthttvppprxtpthtrxurptxpqutthttqpprytrtvut
+tqtrvptthtqttuthxuxtxrutxxprtptxurptxpqutyurptrxuxrrxvhtprttrxrtxxhwthtuxtpyqtutyu
+rppuxutpquthwtptpptxtprytrtvuttqtrvphwtvttxvvtwtrttthtwruurttppxvpxpttrtrxrttxttqr
+tppqtqyqthhuppqyrputtrxrtthtttqwtrtprtpprtqythupuvutttrtxttthtpvtturtuhtrrhtputhrx
+rprthurrpytrttptpttprrhtqtrtrttyuppttvtqtrtxtxpvupvttvxhrhprprttrtttrxvprxxtprtuth
+tprytrtvuttqtrvtqthtpvtturtuhtrrhtpxtxptxtxvqyyttttthtpvtturtuhtrrhtqyxrprthurrpyt
+rtttxprppxqhtxpxxthtrthtpttpvutxxxprptuxttxtyxvthtqrqtvptyyttryvthtuxvtrpvtpxpvxth
+tpwxththttwxttxpvxxthtpvtturtuthtqutrprqurtvxxxthtpvtturtuthtptrtqpxxthtpvtturtuth
+ttvxttrthuqxthtpvtturtuthtqtqprhtrxxthtpvtturtuthtqtryrrttxxxthtpvtturtuthtrpptrqt
+trhtpvtturtxpr
+
+\end{alltt}
+
+
+\pagebreak
+

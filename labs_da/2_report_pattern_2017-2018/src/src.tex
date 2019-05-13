@@ -1,0 +1,238 @@
+\section{Описание}
+Программа должна обрабатывать строки входного файла до его окончания. Каждая строка может иметь следующий формат:
+\begin{enumerate}
+\item + word 34 - добавить слово «word» с номером 34 в словарь.
+Программа должна вывести строку «OK», если операция прошла
+успешно, «Exist», если слово уже находится в словаре.
+\item - word — удалить слово «word» из словаря. Программа должна
+вывести «OK», если слово существовало и было удалено,
+«NoSuchWord», если слово в словаре не было найдено.
+\item word — найти в словаре слово «word». Программа должна вывести
+«OK: 34», если слово было найдено; число, которое следует за
+«OK:» — номер, присвоенный слову при добавлении. В случае,
+если слово в словаре не было обнаружено, нужно вывести строку
+«NoSuchWord».
+\item ! Save /path/to/file — сохранить словарь в бинарном компактном
+представлении на диск в файл, указанный параметром команды.
+В случае успеха, программа должна вывести «OK», в случае
+неудачи выполнения операции, программа должна вывести
+описание ошибки (см. ниже).
+\item ! Load /path/to/file — загрузить словарь из файла. Предполагается,
+что файл был ранее подготовлен при помощи команды Save. В
+случае успеха, программа должна вывести строку «OК», а
+загруженный словарь должен заменить текущий (с которым
+происходит работа); в случае неуспеха, должна быть выведена
+диагностика, а рабочий словарь должен остаться без изменений.
+Кроме системных ошибок, программа должна корректно
+обрабатывать случаи несовпадения формата указанного файла и
+представления данных словаря во внешнем файле.
+
+\end{enumerate}
+
+
+Для всех операций, в случае возникновения системной ошибки
+(нехватка памяти, отсутствие прав на запись и т.п.), программа
+должна вывести строку, начинающуюуся с «ERROR:» и описывающую
+на английском языке возникшую ошибку.
+\pagebreak
+
+\section{Исходный код}
+Основные этапы написания кода:
+\begin{enumerate}
+\item Считывание исходных данных
+\item Определение операции 
+\item Выполнение операции
+\item Вывод результата
+\end{enumerate}
+
+Для хранения значений мы используем класс Node, который и является элементом дерева. В нем мы определяем $unsigned long long mvalue$  и $char *mkey$, где и храним значения.
+
+После вставки элемента в само дерева, вызывается процедура балансировки, которая перестраивает дерево в соответствии с правилами построения красно-черного дерева.
+
+При удалении вызывается аналогичная процедура. 
+
+Балансировка достигается за счет использования функций поворота узлов дерева.
+
+
+\begin{lstlisting}[language=C]
+
+
+typedef enum { BLACK, RED } nodeColor;
+
+class Node {
+    public:
+        nodeColor color; // enumed color
+        Node *left;
+        Node *right;
+        Node *parent;
+        unsigned long long m_value = 0;
+        char *m_key = nullptr;
+
+        Node(char *key, unsigned long long value){
+            int i = 0;
+            if(key != nullptr){
+                int len_key = 0;
+                len_key = strlen(key);
+                m_key = (char*)malloc((len_key+1) * sizeof(char));
+                for(i = 0; i < len_key; i++){
+                    m_key[i] = key[i];
+                }
+            }
+            m_key[i] = '\0'; // valgrind lenkey+1        
+            m_value = value;
+            color = RED;
+        };
+        
+        Node(nodeColor color, Node *left, Node *right, 
+            Node *parent,  char *key, unsigned long long value){
+            int i = 0;
+            if(key != nullptr){
+                int len_key = 0;
+                len_key = strlen(key);
+                m_key = (char*)malloc((len_key+1) * sizeof(char));
+                for(i = 0; i < len_key; i++){
+                    m_key[i] = key[i];
+                }
+            }
+            m_key[i] = '\0'; // valgrind lenkey+1        
+            m_value = value;
+            this->color = color;
+            this->left = left;
+            this->right = right;
+            this->parent = parent;
+        };
+        
+        Node(){ 
+        };
+        ~Node(){
+            free(m_key); // valgrind  1- to free, 2 - in deletehidden
+
+        };
+    };
+
+void TRBTree::RotateLeft(Node *node) {
+
+    Node *right_child = node->right; 
+    node->right = right_child->left;
+
+    if (right_child->left != nil)
+        right_child->left->parent = node;
+    
+    if (right_child != nil) right_child->parent = node->parent;
+
+    if (node->parent != nil) {
+        if (node == node->parent->left)
+            node->parent->left = right_child;
+        else 
+            node->parent->right = right_child;
+    } else {
+        root = right_child;
+    }
+
+    right_child->left = node;
+    if (node != nil) node->parent = right_child;
+    
+}
+
+
+void TRBTree::FixInsertRBTree(Node *node) {
+    
+    while (node != root 
+        && node->parent->color == RED) 
+    {
+     
+        
+        if (node->parent == node->parent->parent->left) {
+            
+            if (node->parent->parent->right->color == RED) { 
+                node->parent->parent->color =  RED;
+                node->parent->parent->right->color =  BLACK;
+                node->parent->parent->left->color =  BLACK; 
+                node = node->parent->parent; 
+            } else {
+               
+                if (node == node->parent->right){ 
+                    node = node->parent;
+                    RotateLeft(node);
+                } 
+                node->parent->color =  BLACK;
+                node->parent->parent->color =  RED;
+                RotateRight(node->parent->parent); 
+            }
+        } else {
+            
+            if (node->parent->parent->left->color == RED) {
+                node->parent->parent->color = RED;
+                node->parent->parent->right->color = BLACK;
+                node->parent->parent->left->color = BLACK; 
+                node = node->parent->parent;
+            } else {
+                if (node == node->parent->left){ 
+                    node = node->parent;
+                    RotateRight(node); 
+                } 
+                node->parent->color =  BLACK;
+                node->parent->parent->color =  RED;
+                RotateLeft(node->parent->parent);
+            }
+        }
+    }
+
+    this->root->color =  BLACK;
+}
+\end{lstlisting}
+
+
+\pagebreak
+
+\section{Консоль}
+\begin{alltt}
+denis@denis-Extensa-2510G:~/labs_3sem/labs_da/2lab_debug/2lab ./2lab < tests/01.t > result.txt
+
+denis@denis-Extensa-2510G:~/labs_3sem/labs_da/2lab_debug/2lab diff tests/01.a result.txt 
+\end{alltt}
+
+\textbf{Пример теста 01.t:}
+QPXLHFZWLTFXXZNMZGXSTNJUYKCQIAXRHDVQMSXYOHDIYCRLVPDCHHYOPYBIRDUPKXJRVVESDYWCPHTKOLYMELHLMOKAHQJHFAHGSPMZRJVHQNAOEKMOGPHYTGOROLKQQMZWEMOVMSULJGHJUCBEMHXJDORXZGDUKIXECRTPXLLICGRCPVCJDQSYDWLQFKVGTGKXDHDGWREHFZDGUQOXWWDVNDKOIXRJVVEKFPVHXLVJPSQSNVKNUQIVXKNIZXQM
+
+! Save test
+
+EEZCKZGUEGADTBILUUFUWTDAGUNRYWUUDSHLQRQCDSTUBVEITSPTNGSGAZCODBUHKIYSFSOWVTRWVFOZNNDLLEJVVJQDAJTTUVPXWKRSVUCWEQLOZAOJOIQROUXPTRRWHEDYWAUKTTHRTEUWFFFCADHAZSBRQQBXASPKWYKXPBTNOSLEDADJAJMHEZMZSEZHOYBQEPDXNDTHMAAMRLBXRITWENSETMTJDQCBCDRSTVSHKHNLSMPQWLNIBRBQHOBV
++ MKNULGHFEJSNDKRIAPYEVGWEWWPQPWOGYDNKUNSMGRCKDTHATELLKVOCQTKLBXAAKXZYUANDREBQQWJJQDZBUWKKDMPKIYBXICZFJOOTWESABIACHUBMZHYAWXIFZLJZGIBKQTFVDYVOFDLWWTZAFSMQQFHYHVWDYANGTGGLQKKSRIKUTUSGYJZYKQXXFHPUXSUOSNOHFZDRXEKNULUJYRAASJLJTTGMIHCLDLEEUJJGVAYCCMFMEKCAZOQNRGNV 3784958133452695920
+
+- QMLDOAXVYZXBXCOBGBOCETJBGDBNYYSOGRDRXDQLQDBLDKINUCPCKSMJUEWWSRFRNEQRSWKBSVUOBUJGCYPGHSYQOLEWWQEVZWRPZNUYUVXSRVWKOOHNDADIJDNBQLXNACDJFTXKPTZGIFSYJUOWCBYOLIBLFIAMDLDBHKJJBXSMIZTZAFRYVHFQIFXOWHZGCNKPHQAGXEGZNPGIWJEDBQVXVOADPQOQSDPNSUHUWTZXWRGYHYZHVLWRVPHQPXJT
+
++ CHTVMOEKLWTESHKEOOPFWOOZGAPCSDLBEASIBZOCNAKVQHXZWYZEYNGHDFWLAJFVQLWNTBRJWLODMIZRXXSAKECXHBOITLFZYRMHFRATZVAKOTXFNMFFEREAJIEIEEKXUFTGOGAPHIXZQWCDADLESEUDFVVAGEVSZDKWCTGAAZTQMCYWLEQNRLVRTIVERNXIKAIKZPLJCWXONCSKATAGJTZGSFWXYIVBGGNHHHBXOHQBGBRRFBCHLUWXHXPRJQYM 86137190829105695
+
+- ZTEQEQCAMHOBQXUTRWXKEGXTLEVTMVULAEWWRPKCNZXJSGEUGNHEFWNVGXNNTQDKIRGQDLINNKHVMDPLBUZQYKUVKFTTNTYEOOYBUOSLRVGLGWQQTIXEVGQVYVQDDLKTGIVAXTZNFYNDSRRHGTPHCIIGJWHNFICHPGEPSZEVIXFGADDTSUUTUXOVOINVWKAXFIQBSOAHDLYXAFPWRXRGTYAZCRPRSYHWJYUTDMWDQFHXYYEEJHYAQQLGJMLWAXJU
+
+- MACYDKBVCXWLPBJWFJGQHOGEQZOSFYWIIGBMCMICAHPFQLSDUSJVFYZWVCUVFIZCUOSDKLBJUMRUTCTAPLUHBTOYDPPBJJJPUQCREQQDTRYRKCXVJNMUUHEYCKGJNEMVSNQTEWAKWMPSJIHULVLROSRUPCOAJGFJFONLCZHABKLKFTTZJJSMTDUFVKMGSESZSJXGWTYLAVUQRRMIDXAQBWALILJGPUWSWLWPDTEMFRIQFOPXSNWSDECETKHXBEWK
+
+chtvmoeklwteshkeoopfwoozgapcsdlbeasibzocnakvqhxzwyzeynghdfwlajfvqlwntbrjwlodmizrxxsakecxhboitlfzyrmhfratzvakotxfnmffereajieieekxuftgogaphixzqwcdadleseudfvvagevszdkwctgaaztqmcywleqnrlvrtivernxikaikzpljcwxoncskatagjtzgsfwxyivbggnhhhbxohqbgbrrfbchluwxhxprjqym
+
+! Save test
+
+\textbf{Полученный ответ 01.a:}
+
+NoSuchWord
+
+OK
+
+NoSuchWord
+
+OK
+
+NoSuchWord
+
+OK
+
+NoSuchWord
+
+NoSuchWord
+
+OK: 86137190829105695
+
+OK
+
+\pagebreak
+

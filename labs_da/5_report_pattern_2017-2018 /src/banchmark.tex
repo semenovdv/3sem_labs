@@ -1,0 +1,31 @@
+\section{Тест производительности}
+\begin{lstlisting}[language=C]
+	std::string s1, s2;
+    s1 = "In the meantime, Tom goes on a picnic to McDougal's Cave with Becky and their classmates. However, Tom and Becky get lost and end up wandering in the extensive cave complex for the several days, facing starvation and dehydration. Becky becomes extremely dehydrated and weak, and Tom's search for a way out grows more desperate. He accidentally encounters Injun Joe in the caves one day, but is not seen by his nemesis. Eventually, Tom finds a way out, and they are joyfully welcomed back by their community. As a preventive measure, Judge Thatcher, Becky's father, has McDougal's Cave sealed off with an iron door. When Tom hears of the sealing two weeks later, he is horror-stricken, knowing that Injun Joe is still inside. He directs a posse to the cave, where they find Injun Joe's corpse just inside the sealed entrance, starved to death after having desperately consumed raw bats and candle stubs as a last resort. The place of his death, and specifically the in situ cup he used to collect water from a dripping stalactite, becomes a local tourist attraction. Tom and others in the town feel pity at the horribly cruel death, despite Injun Joe's wickedness, and a petition is started to the governor to posthumously pardon him.";
+    s2 = "A week later, having deduced from Injun Joe's presence at McDougal's Cave that the villain must have hidden the stolen gold inside, Tom takes Huck to the cave and they find the box of gold, the proceeds of which are invested for them. The Widow Douglas adopts Huck, but he finds the restrictions of a civilized home life painful, attempting to escape back to his vagrant life. Tom tricks him into thinking that he can later join Tom's new scheme of starting a robber band if he returns to the widow. Reluctantly, Huck agrees and goes back to the widow. ";
+    time_t b1 = clock();
+    TSTree tree = TSTree(s1, s2);
+    tree.FindLCS();
+    time_t end = clock();
+
+    std::cout << "Time is: " << end - b1 << std::endl;
+
+\end{lstlisting}
+
+\begin{center}
+\begin{table}[h]
+
+\label{tabular:timesandtenses}
+
+\begin{tabular}{c|c|c|c}
+длина текста & LCS & нативный & дерево суффиксов\\
+
+128 & 4 & 174 & 864\\
+624 & 624 & 6902 & 5697\\
+1521 & 152 & 8617 & 7372\\
+\end{tabular}
+\end{table}
+\end{center}
+Как мы видим, с увеличением количества слов превосходство алгоритма с использованием суффиксного дерева очевидно.
+ 
+\pagebreak

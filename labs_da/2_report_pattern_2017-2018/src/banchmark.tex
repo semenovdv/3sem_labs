@@ -1,0 +1,28 @@
+\section{Тест производительности}
+\begin{lstlisting}[language=C]
+clock_t start_my = clock();
+ /* some work */
+clock_t end_my = clock();
+std::cout <<"map " << (double)(-(start_my - end_my)) / CLOCKS_PER_SEC << std::endl;
+\end{lstlisting}
+Первый результат - результат карманной сортировки. Второй - сортировки вставкой.
+
+\begin{center}
+\begin{table}[h]
+
+\label{tabular:timesandtenses}
+
+\begin{tabular}{c|c|c}
+Кол-во тестов & map & RBTree\\
+
+100 & 0.006953 & 0.00136\\
+1000 & 0.023991 & 0.015864\\
+10000 & 0.311768 & 0.12934\\
+\end{tabular}
+\end{table}
+\end{center}
+Как мы видим, наше красно-черное дерево работает гораздо быстрее.
+
+
+ 
+\pagebreak
